@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nemo 徐毓翎 創作專場《我是一隻魚》</title>
+    <!-- 引入 Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 配置 Tailwind 主題顏色與字體 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        deepsea: {
+                            900: '#020c15',
+                            800: '#061f33',
+                            700: '#0a3556',
+                            500: '#156a9e',
+                            300: '#38b0de',
+                            100: '#aee4f8',
+                        },
+                        abyss: '#01060a'
+                    },
+                    fontFamily: {
+                        sans: ['"Noto Sans TC"', 'sans-serif'],
+                        serif: ['"Noto Serif TC"', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- 引入 Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700;900&family=Noto+Serif+TC:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+        .bg-water-gradient {
+            background: linear-gradient(180deg, #01060a 0%, #061f33 50%, #020c15 100%);
+        }
+        /* 購物車抽屜動畫 */
+        .cart-drawer {
+            transform: translateX(100%);
+            transition: transform 0.3s ease-in-out;
+        }
+        .cart-drawer.open {
+            transform: translateX(0);
+        }
+        .cart-overlay {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease-in-out;
+        }
+        .cart-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        /* 輸入框自定義 */
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #38b0de !important;
+            box-shadow: 0 0 10px rgba(56, 176, 222, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-[#FCFCFC] text-slate-700 font-sans antialiased overflow-x-hidden">
+
+    <!-- 購物車側邊欄 -->
+    <div id="cartOverlay" class="cart-overlay fixed inset-0 bg-black/60 z-[60] backdrop-blur-sm"></div>
+    <div id="cartDrawer" class="cart-drawer fixed right-0 top-0 h-full w-full max-w-md bg-deepsea-900 z-[70] shadow-2xl border-l border-deepsea-700 flex flex-col">
+        <div class="p-6 border-b border-deepsea-800 flex justify-between items-center shrink-0">
+            <h2 class="text-xl font-bold text-white tracking-widest flex items-center gap-2">
+                <svg class="w-6 h-6 text-deepsea-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                您的購物車
+            </h2>
+            <button id="closeCart" class="text-gray-400 hover:text-white">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        
+        <!-- 內容區域：包含商品與表單 -->
+        <div class="flex-1 overflow-y-auto p-6 space-y-8">
+            <!-- 購物車品項列表 -->
+            <div id="cartItems" class="space-y-6">
+                <!-- 動態生成內容 -->
+            </div>
+
+            <!-- 結帳表單 (僅在有商品時顯示) -->
+            <div id="checkoutFormSection" class="hidden space-y-6 border-t border-deepsea-800 pt-8">
+                <h3 class="text-lg font-bold text-white tracking-widest border-l-4 border-deepsea-300 pl-3">收件與付款資訊</h3>
+                <form id="orderForm" class="space-y-4">
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1">姓名 *</label>
+                        <input type="text" id="name" required class="w-full bg-abyss border border-deepsea-800 rounded px-4 py-2 text-sm text-white transition-all" placeholder="請輸入姓名">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1">Email *</label>
+                        <input type="email" id="email" required class="w-full bg-abyss border border-deepsea-800 rounded px-4 py-2 text-sm text-white transition-all" placeholder="example@mail.com">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1">電話 *</label>
+                        <input type="tel" id="phone" required class="w-full bg-abyss border border-deepsea-800 rounded px-4 py-2 text-sm text-white transition-all" placeholder="0912345678">
+                    </div>
+<div>
+    <label class="block text-xs text-gray-500 mb-2">取貨方式 *</label>
+    <div class="space-y-2 text-sm text-white">
+        <label class="flex items-start gap-2 cursor-pointer">
+            <input type="radio" name="deliveryMethod" value="pickup" required class="mt-1">
+            <span>
+                專場現場取
+                <span class="block text-xs text-gray-400 mt-1">
+                    當日不收運費。若周邊當天未能即時備妥，將改寄填寫地址，並後續補收運費 NT$120。
+                </span>
+            </span>
+        </label>
+        <label class="flex items-start gap-2 cursor-pointer">
+            <input type="radio" name="deliveryMethod" value="shipping" required class="mt-1">
+            <span>
+                寄送到填寫地址
+                <span class="block text-xs text-gray-400 mt-1">
+                    將加收運費 NT$120。
+                </span>
+            </span>
+        </label>
+    </div>
+</div>
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1">收件地址 *</label>
+                        <input type="text" id="address" required class="w-full bg-abyss border border-deepsea-800 rounded px-4 py-2 text-sm text-white transition-all" placeholder="請輸入完整的收件地址">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1">匯款後五碼 *</label>
+                        <input type="text" id="bankId" required maxlength="5" class="w-full bg-abyss border border-deepsea-800 rounded px-4 py-2 text-sm text-white transition-all" placeholder="00000">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1">備註</label>
+                        <textarea id="note" rows="2" class="w-full bg-abyss border border-deepsea-800 rounded px-4 py-2 text-sm text-white transition-all" placeholder="有什麼想對Nemo說的嗎？"></textarea>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 底部結帳與總計 -->
+        <div id="cartFooter" class="p-6 border-t border-deepsea-800 space-y-4 shrink-0 bg-deepsea-900/80 backdrop-blur-md">
+           <div class="space-y-2 text-sm">
+    <div class="flex justify-between">
+        <span class="text-gray-400">商品小計</span>
+        <span id="cartSubtotal" class="text-white">NT$ 0</span>
+    </div>
+    <div class="flex justify-between">
+        <span class="text-gray-400">運費</span>
+        <span id="cartShipping" class="text-white">NT$ 0</span>
+    </div>
+    <div class="flex justify-between text-lg pt-2 border-t border-deepsea-800">
+        <span class="text-gray-300">總計金額</span>
+        <span id="cartTotal" class="text-deepsea-300 font-bold font-serif">NT$ 0</span>
+    </div>
+</div>
+            <button id="submitOrderBtn" class="w-full bg-deepsea-300 text-abyss py-3 rounded-full font-bold tracking-widest hover:bg-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+                提交訂單並付款
+            </button>
+        </div>
+    </div>
+
+    <!-- 成功訊息彈窗 (靜態 UI) -->
+    <div id="successModal" class="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm hidden">
+        <div class="bg-deepsea-900 border border-deepsea-300 p-8 rounded-2xl max-w-sm w-full text-center">
+            <div class="w-16 h-16 bg-green-500/20 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+
+            <h4 class="text-xl font-bold text-white mb-2">訂單提交成功</h4>
+           <p id="successMessage" class="text-gray-400 text-sm mb-6">
+    感謝您的支持，我們已收到您的訂單！
+</p>
+            <button onclick="closeModal()" class="w-full bg-deepsea-300 text-abyss py-2 rounded-full font-bold">太棒了</button>
+        </div>
+    </div>
+
+<!-- 商品詳情彈窗 -->
+<div id="productModal" class="fixed inset-0 z-[100] hidden bg-black/60 flex items-center justify-center p-4 md:p-6">
+    <div class="bg-white rounded-2xl max-w-2xl w-full p-6 relative max-h-[90vh] overflow-y-auto">
+        <button onclick="closeProductModal()" class="absolute top-3 right-3 text-gray-400 hover:text-black z-10">✕</button>
+        <div id="productModalContent"></div>
+    </div>
+</div>
+
+    <!-- Navbar -->
+    <header class="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-[#D2E9FF]">
+        <div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+          <button onclick="window.scrollTo(0,0)" class="cursor-pointer">
+    <img
+        src="images/logo-title.png"
+        alt="我是一隻魚"
+        class="h-16 md:h-20 w-auto object-contain"
+    />
+</button>
+            <nav class="flex items-center space-x-6">
+                <div class="hidden md:flex space-x-6 text-sm text-gray-400">
+                    <a href="#about" class="hover:text-[#708090] transition-colors">關於專場</a>
+                    <a href="#music" class="hover:text-deepsea-300 transition-colors">單曲試聽</a>
+                    <a href="#merch" class="hover:text-deepsea-300 transition-colors">周邊商品</a>
+                </div>
+                <!-- 購物車按鈕 -->
+                <button id="openCart" class="relative p-2 text-[#708090] hover:text-slate-800 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                    <span id="cartBadge" class="absolute top-0 right-0 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center hidden">0</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 1. Hero 首屏 -->
+    <section class="relative h-[55vh] md:min-h-screen overflow-hidden pt-20 bg-[#D2E9FF] flex items-center justify-center">
+    <div class="absolute inset-0">
+        <img
+    src="images/cover.jpg"
+    alt="專場主視覺"
+    class="w-full h-full object-cover md:object-contain bg-[#D2E9FF]"
+/>
+    </div>
+</section>
+
+	<section class="relative z-20 -mt-[120px] md:-mt-[180px] py-16 px-6">
+    <div class="max-w-4xl mx-auto flex flex-col items-center text-center animate-float bg-white/80 backdrop-blur-md rounded-2xl py-10 px-6 shadow-lg">
+        <div class="flex flex-col space-y-3 text-[#708090] tracking-wider items-center">
+            <p class="flex items-center gap-2">
+                <svg class="w-5 h-5 text-[#708090]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+                2026 / 04 / 26 (日)
+            </p>
+
+            <p class="flex items-center gap-2">
+                <svg class="w-5 h-5 text-[#708090]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                </svg>
+                凝聚力音樂展演空間
+            </p>
+        </div>
+    </div>
+</section>
+
+    <!-- 2. 專場介紹 -->
+    <section id="about" class="py-16 px-6 bg-white border-y border-[#D2E9FF]">
+    <div class="max-w-3xl mx-auto text-center">
+
+        <p class="text-[#708090] leading-relaxed md:text-lg text-justify md:text-center space-y-6 flex flex-col font-light">
+            <span>喜歡在自己的小世界裡游來游去。</span>
+            <span>透過這場專場，想和你們分享我的水底世界，</span>
+            <span>一些在夜裡反覆游動的念頭、</span>
+            <span>一些說不出口的感受、</span>
+            <span>那些纏繞於心的固執終於一道道被解開...</span>
+        </p>
+
+    </div>
+</section>
+
+    <!-- 3. 單曲區 -->
+    <section id="music" class="py-24 px-6 bg-[#F4FAFF]">
+    <div class="max-w-5xl mx-auto">
+        <h3 class="text-3xl font-bold text-[#708090] mb-12 tracking-widest text-center">最新單曲</h3>
+
+        <div class="grid grid-cols-1 md:grid-cols-[320px_1fr] gap-8 items-center bg-white border border-[#D2E9FF] rounded-3xl p-6 md:p-8 shadow-sm">
+            <div class="w-full aspect-square overflow-hidden rounded-2xl bg-[#FCFCFC]">
+                <img
+                    src="images/album-cover.jpg"
+                    alt="我是一隻魚 專輯封面"
+                    class="w-full h-full object-cover"
+                />
+            </div>
+
+            <div>
+                <p class="text-xs tracking-[0.25em] text-[#708090] mb-3">NEMO 徐毓翎</p>
+                <h4 class="text-2xl md:text-3xl font-bold text-[#708090] mb-3">即將發行</h4>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <a href="https://你的連結1" target="_blank" class="rounded-full border border-[#D2E9FF] px-4 py-3 text-center text-sm font-semibold text-[#708090] hover:bg-[#F4FAFF] transition-all">
+                        盡情的哭
+                    </a>
+                    <a href="https://你的連結2" target="_blank" class="rounded-full border border-[#D2E9FF] px-4 py-3 text-center text-sm font-semibold text-[#708090] hover:bg-[#F4FAFF] transition-all">
+                        盛開
+                    </a>
+                    <a href="https://你的連結3" target="_blank" class="rounded-full border border-[#D2E9FF] px-4 py-3 text-center text-sm font-semibold text-[#708090] hover:bg-[#F4FAFF] transition-all">
+                        我將會失去你
+                    </a>
+                </div>
+
+                <p class="text-xs text-slate-400 mt-4">
+                    未完待續...
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+    <!-- 4. 商品展示區 -->
+    <section id="merch" class="py-24 px-6 bg-white">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-10">
+    <h3 class="text-3xl font-bold text-[#708090] mb-4 tracking-widest">專場門票與周邊商品</h3>
+    <p class="text-gray-400 font-light">點擊品項加入購物車</p>
+</div>
+
+<div class="max-w-3xl mx-auto mb-10 rounded-2xl border border-[#D2E9FF] bg-[#F4FAFF] px-6 py-5 text-center shadow-sm">
+    <p class="text-[#708090] text-sm md:text-base leading-7">
+        我的專場門票與限定周邊小物皆可於此下單。<br>
+	這次專場裡的情緒和想說的話都設計在裡面了～<br>
+        若有喜歡的品項，建議先完成下單與匯款，部分商品數量有限！<br>
+        可以 <span class="font-semibold">專場現場取貨</span> 與 <span class="font-semibold">寄送到府</span>。
+    </p>
+</div>
+
+<div class="mb-10 max-w-2xl mx-auto bg-deepsea-800/70 border border-deepsea-300/30 rounded-xl px-6 py-5 text-sm text-gray-200 leading-7 shadow-lg">
+    <p>※ 本次門票為現場報到入場，不寄送實體票券</p>
+    <p>※ 訂單需完成匯款才成立</p>
+    <p>※ 請於 24 小時內完成匯款</p>
+    <p>※ 未完成匯款將自動取消訂單</p>
+</div>
+
+            <div id="productGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8">
+                <!-- 由 JS 動態渲染 -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+   <footer class="bg-[#F4FAFF] py-12 text-center border-t border-[#D2E9FF]">
+        <p class="text-gray-500 text-sm tracking-widest font-light">© 2026 Nemo 徐毓翎《我是一隻魚》創作專場. All Rights Reserved.</p>
+    </footer>
+
+    <!-- JavaScript 邏輯 -->
+    <script>
+        // 1. 商品數據
+        const products = [
+   {
+    id: 1,
+    name: "✨就最支持全包套組（含專場票）",
+    price: 5238,
+    description: "4/12前訂購可於專場當天現取❗️\n給就最支持的你的專屬套組(⁎⁍̴̛ᴗ⁍̴̛⁎)\n專場門票*1 + 周邊商品全套*1 +小卡盲包*10\n\n內含：盛開單曲NFC吊飾+ 魚頭人打火機+ 雙緹花專場運動毛巾+ 小卡卡夾+貓咪吊飾（項鍊）+ 魚頭人徽章+ 專場T-shirt黑&白 +Nemo個人寫真集+ 明信片2入組+ 專場提袋+專場簽名海報+小卡盲包*10\n（原價$6091）\n\n已用google表單訂票的朋友Nemo會另外退還票錢給你💖",
+    images: ["images/all1-1.jpg"],
+    bundleShirtSizes: true,
+    sizes: ["S", "M", "L", "XL", "2XL", "3XL"]
+    },
+    {
+        id: 2,
+        name: "✨愛38翎周邊套裝",
+        price: 2380,
+        description: "4/20前訂購可於專場當天現取❗️\n專場限定周邊套組，展現愛38翎的心(⁎⁍̴̛ᴗ⁍̴̛⁎）\n\n內含：盛開單曲NFC吊飾+ 魚頭人打火機+ 雙緹花專場運動毛巾+ 小卡卡夾+貓咪吊飾（項鍊）+ 魚頭人徽章+Nemo個人寫真集+專場提袋+專場簽名海報+小卡盲包*1\n（原價$2716）",
+        images: ["images/all2-1.jpg"]
+    },
+    {
+        id: 3,
+        name: "✨專場門票",
+        price: 700,
+        description: "《我是一隻魚》專場單人門票，全座席。Nemo的創作單曲發表會，請來厲害的樂手老師們，帶來一場沈浸式的海底音樂盛宴。\n\n❗️已用表單訂票的朋友無需重複下單\n❗️採現場報到入場，不寄送實體票券。",
+        images: ["images/poster-1.jpg"]
+    },
+    {
+        id: 4,
+        name: "✨專場雙人門票",
+        price: 1200,
+        description: "《我是一隻魚》專場單人門票，全座席。Nemo的創作單曲發表會，請來厲害的樂手老師們，帶來一場沈浸式的海底音樂盛宴，和你的朋友一起來參與吧！\n\n❗️已用表單訂票的朋友無需重複下單\n❗️採現場報到入場，不寄送實體票券。",
+        images: ["images/poster-1.jpg"]
+    },
+    {
+        id: 5,
+        name: "✨雙緹花專場運動毛巾",
+        price: 600,
+        description: "（此為AI示意圖）\n代表夢想的星星人，帶著Nemo和Dany潛入水底，除了一起完成《我是一隻魚》專場，也要陪伴你們擦乾每一次汗水雨水和淚水的瞬間（？）限量販售，售完不補。\n\n材質：雙緹花100%純棉\n尺寸：22*110cm\n設計師：Yan Lee",
+        images: ["images/towel-1.jpg", "images/towel-2.jpg"]
+    },
+    {
+        id: 6,
+        name: "✨魚頭人徽章",
+        price: 238,
+        description: "（此為AI示意圖）\n充滿紀念價值的魚頭人徽章，別在包包上更增添你與眾不同的氣質（尤其是那個腿毛），專場限定販售。\n\n設計師：Yan Lee",
+        images: ["images/badge-1.jpg", "images/badge-2.jpg"]
+    },
+    {
+        id: 7,
+        name: "✨小卡卡夾+貓咪吊飾（項鍊）",
+        price: 600,
+        description: "(此為AI示意圖）\n實用具機能性的卡夾套組，除了能放置信用卡、證件、零錢外，更重要的是能讓你秀出你珍藏的偶像小卡，配上貓咪吊飾更增添可愛，貓咪吊飾還能變換成項鍊，成為你的時尚配件！限量販售，售完不補。\n\n內含：卡夾+掛繩+貓咪吊飾+銀色項鍊\n卡夾材質：頭層牛皮\n設計師：Yan Lee",
+        images: ["images/小卡卡包-1.jpg", "images/小卡卡包-2.jpg", "images/小卡卡包-3.jpg"]
+    },
+    {
+        id: 8,
+        name: "✨小卡盲包",
+        price: 100,
+        description: "Nemo小卡，共五種款式（含附上Nemo小巧思的隱藏版），你能全部收集到嗎？",
+        images: ["images/photocard-1.jpg", "images/photocard-2.jpg"]
+    },
+    {
+        id: 9,
+        name: "✨盛開單曲NFC吊飾",
+        price: 520,
+        description: "由設計師Yan Lee依照盛開歌曲情境風格設計出的NFC吊飾，是Nemo推出的第一首單曲，非常具有紀念價值，限量販售，售完不補。",
+        images: ["images/keychain-1.jpg", "images/keychain-2.jpg", "images/keychain-3.jpg", "images/keychain-4.jpg"]
+    },
+    {
+        id: 10,
+        name: "✨魚頭人打火機",
+        price: 138,
+        description: "充滿活力的魚頭人陪伴你度過生活中的每一次呼吸、浪漫時光、生日慶典，希望你每天都Have a nice day，專場限定販售。\n\n設計師：Yan Lee",
+        images: ["images/lighter-1.jpg", "images/lighter-2.jpg", "images/lighter-3.jpg"]
+    },
+    {
+        id: 11,
+        name: "✨明信片2入組",
+        price: 120,
+        description: "（此為AI示意圖）\n《我是一隻魚》專場概念明信片，最好的收藏，一定是明信片。\n\n攝影師：典Dot\n設計師：Yan Lee",
+        images: ["images/postcard-1.jpg", "images/postcard-2.jpg", "images/postcard-3.jpg"]
+    },
+    {
+        id: 12,
+        name: "✨Nemo個人寫真集",
+        price: 520,
+        description: "4/20前訂購可於專場當天現取❗️\nNemo的第一本寫真集 ，以《我是一隻魚》專場為概念，像魚一樣沈浸在水底，也像花朵一般盛開，是你絕對不能錯過的美麗。\n\n攝影師：典Dot",
+        images: ["images/book-1.jpg"]
+    },
+    {
+        id: 13,
+        name: "✨專場T shirt（噴墨白）",
+        price: 850,
+        description: "4/12前訂購可於專場當天現取❗️\n設計師Yan Lee嘔心瀝血為專場所設計的T-shirt，落肩重磅的好版型，一別聽團仔氣息，讓你一穿上就變日系潮潮。因白色款設計特殊，使用噴墨製法，因此價格較高。\n材質：100%棉",
+        images: ["images/tshirtw-1.jpg", "images/tshirtw-2.jpg", "images/tshirtw-3.jpg", "images/tshirtw-4.jpg", "images/尺碼.jpg"],
+        sizes: ["S", "M", "L", "XL", "2XL", "3XL"]
+    },
+    {
+        id: 14,
+        name: "✨專場T shirt（印刷黑）",
+        price: 800,
+        description: "4/12前訂購可於專場當天現取❗️\n設計師Yan Lee嘔心瀝血為專場所設計的T-shirt，落肩重磅的好版型，一別聽團仔氣息，讓你一穿上就變日系潮潮。一別白色的清新感，黑色讓你更帥氣。\n材質：100%棉",
+        images: ["images/tshirtb-1.jpg", "images/tshirtb-2.jpg", "images/尺碼.jpg"],
+        sizes: ["S", "M", "L", "XL", "2XL", "3XL"]
+    },
+    {
+        id: 15,
+        name: "✨專場提袋",
+        price: 5,
+        description: "（此為AI示意圖）\n《我是一隻魚》Logo塑膠提袋，最適合拿來裝你買的各種專場周邊(⁎⁍̴̛ᴗ⁍̴̛⁎)",
+        images: ["images/bag-1.jpg"]
+    },
+    {
+        id: 16,
+        name: "✨專場簽名海報",
+        price: 0,
+        description: "此為贈品，滿$520贈送一張，依此類推（多張請自行放入購物車，否則只會贈送一張）\n\n攝影師：Dot典",
+        images: ["images/poster-1.jpg"]
+    }
+];
+       
+
+        let cart = JSON.parse(localStorage.getItem('nemo_cart')) || [];
+
+let currentProduct = null;
+let currentImageIndex = 0;
+let currentProductQuantity = 1;
+let cardQuantities = {};
+
+        // 2. DOM 元素
+        const productGrid = document.getElementById('productGrid');
+        const cartDrawer = document.getElementById('cartDrawer');
+        const cartOverlay = document.getElementById('cartOverlay');
+        const openCartBtn = document.getElementById('openCart');
+        const closeCartBtn = document.getElementById('closeCart');
+        const cartItemsContainer = document.getElementById('cartItems');
+        const cartTotalDisplay = document.getElementById('cartTotal');
+        const cartBadge = document.getElementById('cartBadge');
+        const checkoutFormSection = document.getElementById('checkoutFormSection');
+        const orderForm = document.getElementById('orderForm');
+        const submitOrderBtn = document.getElementById('submitOrderBtn');
+        const successModal = document.getElementById('successModal');
+	const successMessage = document.getElementById('successMessage');
+	const cartSubtotalDisplay = document.getElementById('cartSubtotal');
+	const cartShippingDisplay = document.getElementById('cartShipping');
+function getDeliveryMethod() {
+    const selected = document.querySelector('input[name="deliveryMethod"]:checked');
+    return selected ? selected.value : null;
+}
+function getShippingFee() {
+    const method = getDeliveryMethod();
+    return method === 'shipping' ? 120 : 0;
+}
+function getCardQuantity(productId) {
+    return cardQuantities[productId] || 1;
+}
+function changeCardQuantity(productId, delta) {
+    const current = getCardQuantity(productId);
+    const next = Math.max(1, current + delta);
+    cardQuantities[productId] = next;
+    renderProducts();
+}
+
+function resetCardQuantity(productId) {
+    cardQuantities[productId] = 1;
+}
+
+        // 3. 渲染商品列表
+        function renderProducts() {
+    productGrid.innerHTML = products.map(product => {
+        const qty = getCardQuantity(product.id);
+
+        return `
+        <div class="bg-white rounded-2xl p-4 border border-[#D2E9FF] shadow-sm hover:shadow-md transition-all group flex flex-col">
+            <div class="aspect-square bg-[#F4FAFF] rounded-md mb-4 overflow-hidden relative">
+    <img src="${product.images[0]}" alt="${product.name}" class="w-full h-full object-cover" />
+    <div class="absolute inset-0 bg-deepsea-500/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+</div>
+
+            <h4 class="text-[#708090] font-medium mb-1 truncate">${product.name}</h4>
+            <p class="text-sky-700 font-bold mb-4 font-serif">NT$ ${product.price}</p>
+
+            <button onclick="openProductDetail(${product.id})" class="w-full border border-[#D2E9FF] text-sky-700 py-2 rounded-full hover:bg-[#F4FAFF] transition-all text-sm font-bold mb-3">
+                查看詳情
+            </button>
+
+            ${product.sizes && product.sizes.length > 0 ? `
+                <button onclick="openProductDetail(${product.id})" class="mt-auto w-full bg-[#D2E9FF] text-sky-800 py-2 rounded-full hover:bg-sky-200 transition-all text-sm font-bold">
+                    選擇尺寸
+                </button>
+            ` : `
+                <div class="flex items-center justify-center gap-3 mb-3">
+                    <button onclick="changeCardQuantity(${product.id}, -1)" class="w-8 h-8 rounded-full border border-[#D2E9FF] text-[#708090] font-bold">-</button>
+                    <span class="min-w-[24px] text-center text-[#708090] font-semibold">${qty}</span>
+                    <button onclick="changeCardQuantity(${product.id}, 1)" class="w-8 h-8 rounded-full border border-[#D2E9FF] text-[#708090] font-bold">+</button>
+                </div>
+
+                <button onclick="addToCart(${product.id}, ${qty}, false)" class="mt-auto w-full bg-[#D2E9FF] text-sky-800 py-2 rounded-full hover:bg-sky-200 transition-all text-sm font-bold">
+                    加入購物車
+                </button>
+            `}
+        </div>
+        `;
+    }).join('');
+}
+
+        // 4. 購物車核心功能
+        function addToCart(productId, quantity = 1, openDrawer = false) {
+    const product = products.find(p => p.id === productId);
+    const existingItem = cart.find(item => item.id === productId && !item.selectedSize);
+
+    if (existingItem) {
+        existingItem.quantity += quantity;
+    } else {
+        cart.push({ ...product, quantity: quantity });
+    }
+
+    saveCart();
+    renderCart();
+    resetCardQuantity(productId);
+    renderProducts();
+
+    if (openDrawer) {
+        toggleCart(true);
+    }
+}
+
+        function updateQuantity(productId, delta) {
+            const item = cart.find(item => item.id === productId);
+            if (item) {
+                item.quantity += delta;
+                if (item.quantity <= 0) {
+                    removeFromCart(productId);
+                } else {
+                    saveCart();
+                    renderCart();
+                }
+            }
+        }
+
+        function removeFromCart(productId) {
+            cart = cart.filter(item => item.id !== productId);
+            saveCart();
+            renderCart();
+        }
+
+        function saveCart() {
+            localStorage.setItem('nemo_cart', JSON.stringify(cart));
+            updateBadge();
+        }
+
+        function updateBadge() {
+            const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+            if (count > 0) {
+                cartBadge.textContent = count;
+                cartBadge.classList.remove('hidden');
+            } else {
+                cartBadge.classList.add('hidden');
+            }
+        }
+
+        function renderCart() {
+            if (cart.length === 0) {
+    cartItemsContainer.innerHTML = `<p class="text-gray-500 text-center py-10 tracking-widest font-light">購物車目前是空的</p>`;
+    cartSubtotalDisplay.textContent = `NT$ 0`;
+    cartShippingDisplay.textContent = `NT$ 0`;
+    cartTotalDisplay.textContent = `NT$ 0`;
+    checkoutFormSection.classList.add('hidden');
+    submitOrderBtn.disabled = true;
+    return;
+}
+
+            checkoutFormSection.classList.remove('hidden');
+            submitOrderBtn.disabled = false;
+
+            cartItemsContainer.innerHTML = cart.map(item => `
+                <div class="flex gap-4 items-center animate-in fade-in slide-in-from-right-4 duration-300">
+                    <div class="w-16 h-16 bg-abyss rounded border border-deepsea-800 flex-shrink-0 overflow-hidden">
+    <img
+        src="${item.images && item.images[0] ? item.images[0] : 'images/poster-1.jpg'}"
+        alt="${item.name}"
+        class="w-full h-full object-cover"
+    />
+</div>
+                    <div class="flex-1">
+                        <h4 class="text-white text-sm font-bold">
+    ${item.name}
+    ${item.selectedSize ? `<span class="block text-xs text-gray-400 mt-1">尺寸：${item.selectedSize}</span>` : ''}
+</h4>
+                        <p class="text-deepsea-300 text-xs font-serif">NT$ ${item.price}</p>
+                    </div>
+                    <div class="flex items-center border border-deepsea-800 rounded bg-abyss">
+                        <button onclick="updateQuantity(${item.id}, -1)" class="px-2 py-1 text-gray-400 hover:text-white transition-colors">-</button>
+                        <span class="px-2 text-xs text-white font-mono min-w-[24px] text-center">${item.quantity}</span>
+                        <button onclick="updateQuantity(${item.id}, 1)" class="px-2 py-1 text-gray-400 hover:text-white transition-colors">+</button>
+                    </div>
+                    <button onclick="removeFromCart(${item.id})" class="text-gray-600 hover:text-red-400 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                </div>
+            `).join('');
+
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+const shippingFee = getShippingFee();
+const total = subtotal + shippingFee;
+
+cartSubtotalDisplay.textContent = `NT$ ${subtotal.toLocaleString()}`;
+cartShippingDisplay.textContent = `NT$ ${shippingFee.toLocaleString()}`;
+cartTotalDisplay.textContent = `NT$ ${total.toLocaleString()}`;
+        }
+
+        // 5. 結帳與訂單提交
+        submitOrderBtn.addEventListener('click', async function() {
+    if (!orderForm.checkValidity()) {
+        orderForm.reportValidity();
+        return;
+    }
+
+    submitOrderBtn.disabled = true;
+    submitOrderBtn.textContent = '送出中...';
+
+    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+const shippingFee = getShippingFee();
+const total = subtotal + shippingFee;
+
+    const deliveryMethod = getDeliveryMethod();
+const customerEmail = document.getElementById('email').value;
+
+const orderData = {
+    name: document.getElementById('name').value,
+    email: document.getElementById('email').value,
+    phone: document.getElementById('phone').value,
+    address: document.getElementById('address').value,
+    bankId: document.getElementById('bankId').value,
+    note: document.getElementById('note').value,
+    deliveryMethod: deliveryMethod,
+    shippingFee: shippingFee,
+    subtotal: subtotal,
+    items: cart,
+    total: total
+};
+
+    try {
+	console.log("準備送出訂單", orderData);
+        const response = await fetch("https://script.google.com/macros/s/AKfycbxrMiy3yxJ0spmOt3z957FI4KFjdprccSpvgJ_wYv_Wu5jH0i_VYmglWli4djiyC6pu/exec", {
+            method: "POST",
+            body: JSON.stringify(orderData)
+        });
+
+        const result = await response.json();
+
+        if (result.status === "success") {
+            successMessage.innerHTML = `
+感謝你的支持，尼莫已收到你的訂單。<br><br>
+訂單編號：${result.orderId}<br>
+訂單金額：NT$ ${total}<br><br>
+
+匯款資訊已寄送到你的信箱：<br>
+<span style="font-weight:600; color:#ffffff;">${customerEmail}</span><br><br>
+
+請到信箱查看完整訂單內容與付款資訊，<br>
+並於 24 小時內完成匯款。
+`;
+            successModal.classList.remove('hidden');
+            toggleCart(false);
+
+            cart = [];
+            saveCart();
+            renderCart();
+            orderForm.reset();
+        } else {
+            alert("送出失敗，請稍後再試");
+        }
+    } catch (error) {
+        alert("發生錯誤，請確認網路或稍後再試");
+        console.error(error);
+    } finally {
+        submitOrderBtn.disabled = false;
+        submitOrderBtn.textContent = '提交訂單並付款';
+    }
+});
+            
+
+        function closeModal() {
+            successModal.classList.add('hidden');
+            toggleCart(false);
+        }
+
+        // 6. UI 控制
+        function toggleCart(isOpen) {
+            if (isOpen) {
+                cartDrawer.classList.add('open');
+                cartOverlay.classList.add('open');
+                document.body.classList.add('overflow-hidden');
+            } else {
+                cartDrawer.classList.remove('open');
+                cartOverlay.classList.remove('open');
+                document.body.classList.remove('overflow-hidden');
+            }
+        }
+
+        openCartBtn.addEventListener('click', () => toggleCart(true));
+        closeCartBtn.addEventListener('click', () => toggleCart(false));
+        cartOverlay.addEventListener('click', () => toggleCart(false));
+	document.querySelectorAll('input[name="deliveryMethod"]').forEach(radio => {
+    radio.addEventListener('change', renderCart);
+});
+
+        // 初始執行
+        renderProducts();
+        renderCart();
+        updateBadge();
+function openProductDetail(productId) {
+    const product = products.find(p => p.id === productId);
+    currentProduct = product;
+    currentImageIndex = 0;
+    currentProductQuantity = 1;
+    renderProductModal();
+
+    document.getElementById('productModal').classList.remove('hidden');
+}
+
+function renderProductModal() {
+    const modal = document.getElementById('productModal');
+    const content = document.getElementById('productModalContent');
+    const product = currentProduct;
+
+    if (!product) return;
+
+    const hasBundleShirtSizes = product.bundleShirtSizes === true;
+    const hasSingleSizes = !hasBundleShirtSizes && Array.isArray(product.sizes) && product.sizes.length > 0;
+
+    content.innerHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+                <div class="relative w-full h-72 md:h-96 bg-[#F4FAFF] rounded-xl overflow-hidden mb-4 flex items-center justify-center">
+                    <img
+                        src="${product.images[currentImageIndex]}"
+                        alt="${product.name}"
+                        class="w-full h-full object-cover"
+                    />
+
+                    ${product.images.length > 1 ? `
+                        <button onclick="prevProductImage()" class="absolute left-3 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-slate-700 w-9 h-9 rounded-full shadow flex items-center justify-center">‹</button>
+                        <button onclick="nextProductImage()" class="absolute right-3 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-slate-700 w-9 h-9 rounded-full shadow flex items-center justify-center">›</button>
+                    ` : ''}
+                </div>
+
+                ${product.images.length > 1 ? `
+                    <div class="flex gap-2 overflow-x-auto">
+                        ${product.images.map((img, index) => `
+                            <button onclick="setProductImage(${index})" class="shrink-0 w-16 h-16 rounded-lg overflow-hidden border ${index === currentImageIndex ? 'border-sky-500' : 'border-[#D2E9FF]'}">
+                                <img src="${img}" alt="${product.name}" class="w-full h-full object-cover" />
+                            </button>
+                        `).join('')}
+                    </div>
+                ` : ''}
+            </div>
+
+            <div class="flex flex-col">
+                <h3 class="text-2xl font-bold text-[#708090] mb-2">${product.name}</h3>
+                <p class="text-sky-700 font-bold text-xl mb-4">NT$ ${product.price}</p>
+
+                <div class="mb-6">
+                    <h4 class="text-sm font-semibold text-slate-500 mb-2">商品敘述</h4>
+                    <p class="text-sm leading-7 text-[#708090] whitespace-pre-line">
+                        ${product.description || '暫無商品敘述'}
+                    </p>
+                </div>
+
+                ${hasBundleShirtSizes ? `
+                    <div class="mb-6">
+                        <h4 class="text-sm font-semibold text-slate-500 mb-2">白色 T-shirt 尺寸</h4>
+                        <div class="flex flex-wrap gap-2">
+                            ${product.sizes.map(size => `
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="bundleWhiteSize" value="${size}" class="hidden peer">
+                                    <span class="inline-flex items-center justify-center min-w-[52px] px-4 py-2 rounded-full border border-[#D2E9FF] text-sm text-[#708090] peer-checked:bg-[#D2E9FF] peer-checked:text-sky-800">
+                                        ${size}
+                                    </span>
+                                </label>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <h4 class="text-sm font-semibold text-slate-500 mb-2">黑色 T-shirt 尺寸</h4>
+                        <div class="flex flex-wrap gap-2">
+                            ${product.sizes.map(size => `
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="bundleBlackSize" value="${size}" class="hidden peer">
+                                    <span class="inline-flex items-center justify-center min-w-[52px] px-4 py-2 rounded-full border border-[#D2E9FF] text-sm text-[#708090] peer-checked:bg-[#D2E9FF] peer-checked:text-sky-800">
+                                        ${size}
+                                    </span>
+                                </label>
+                            `).join('')}
+                        </div>
+                    </div>
+                ` : ''}
+
+                ${hasSingleSizes ? `
+                    <div class="mb-6">
+                        <h4 class="text-sm font-semibold text-slate-500 mb-2">尺寸選擇</h4>
+                        <div class="flex flex-wrap gap-2">
+                            ${product.sizes.map(size => `
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="productSize" value="${size}" class="hidden peer">
+                                    <span class="inline-flex items-center justify-center min-w-[52px] px-4 py-2 rounded-full border border-[#D2E9FF] text-sm text-[#708090] peer-checked:bg-[#D2E9FF] peer-checked:text-sky-800">
+                                        ${size}
+                                    </span>
+                                </label>
+                            `).join('')}
+                        </div>
+                    </div>
+                ` : ''}
+
+                <div class="mb-6">
+                    <h4 class="text-sm font-semibold text-slate-500 mb-2">數量</h4>
+                    <div class="flex items-center gap-3">
+                        <button onclick="changeModalQuantity(-1)" class="w-9 h-9 rounded-full border border-[#D2E9FF] text-[#708090] font-bold">-</button>
+                        <span class="min-w-[24px] text-center text-[#708090] font-semibold">${currentProductQuantity}</span>
+                        <button onclick="changeModalQuantity(1)" class="w-9 h-9 rounded-full border border-[#D2E9FF] text-[#708090] font-bold">+</button>
+                    </div>
+                </div>
+
+                <button onclick="addCurrentProductToCart()" class="mt-auto w-full bg-[#D2E9FF] py-3 rounded-full font-bold text-sky-800 hover:bg-sky-200 transition-all">
+                    加入購物車
+                </button>
+            </div>
+        </div>
+    `;
+}
+function prevProductImage() {
+    if (!currentProduct) return;
+    currentImageIndex = (currentImageIndex - 1 + currentProduct.images.length) % currentProduct.images.length;
+    renderProductModal();
+}
+
+function nextProductImage() {
+    if (!currentProduct) return;
+    currentImageIndex = (currentImageIndex + 1) % currentProduct.images.length;
+    renderProductModal();
+}
+
+function setProductImage(index) {
+    currentImageIndex = index;
+    renderProductModal();
+}
+
+function changeModalQuantity(delta) {
+    currentProductQuantity = Math.max(1, currentProductQuantity + delta);
+    renderProductModal();
+}
+
+function addCurrentProductToCart() {
+    if (!currentProduct) return;
+
+    let selectedSize = null;
+    let bundleWhiteSize = null;
+    let bundleBlackSize = null;
+
+    if (currentProduct.bundleShirtSizes === true) {
+        const whiteChecked = document.querySelector('input[name="bundleWhiteSize"]:checked');
+        const blackChecked = document.querySelector('input[name="bundleBlackSize"]:checked');
+
+        if (!whiteChecked || !blackChecked) {
+            alert('請先選擇白色與黑色 T-shirt 尺寸');
+            return;
+        }
+
+        bundleWhiteSize = whiteChecked.value;
+        bundleBlackSize = blackChecked.value;
+        selectedSize = `白色 ${bundleWhiteSize} / 黑色 ${bundleBlackSize}`;
+    } else if (currentProduct.sizes && currentProduct.sizes.length > 0) {
+        const checked = document.querySelector('input[name="productSize"]:checked');
+        if (!checked) {
+            alert('請先選擇尺寸');
+            return;
+        }
+        selectedSize = checked.value;
+    }
+
+    const cartItemId = currentProduct.bundleShirtSizes === true
+        ? `${currentProduct.id}-white-${bundleWhiteSize}-black-${bundleBlackSize}`
+        : (selectedSize ? `${currentProduct.id}-${selectedSize}` : `${currentProduct.id}`);
+
+    const existingItem = cart.find(item => item.cartItemId === cartItemId);
+
+    if (existingItem) {
+        existingItem.quantity += currentProductQuantity;
+    } else {
+        cart.push({
+            ...currentProduct,
+            cartItemId,
+            selectedSize,
+            bundleWhiteSize,
+            bundleBlackSize,
+            quantity: currentProductQuantity
+        });
+    }
+
+    saveCart();
+    renderCart();
+    closeProductModal();
+}
+
+function closeProductModal() {
+    document.getElementById('productModal').classList.add('hidden');
+}
+
+    </script>
+</body>
+</html>
+                
+                
+                
+                
